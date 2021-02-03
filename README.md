@@ -43,9 +43,9 @@ Id 1 is for the Viscoplastic liquid pool, and Id 2 is Newtonian gas.
 #define FILTERED // Smear density and viscosity jumps
 ```
 
-To model Viscoplastic liquids, we use a modified version of [two-phase.h](http://basilisk.fr/src/two-phase.h). [two-phaseVP.h](two-phaseVP.h) contains these modifications.
+To model Viscoplastic liquids, we use a modified version of [two-phase.h](http://basilisk.fr/src/two-phase.h). [two-phaseAxiVP.h](two-phaseAxiVP.h) contains these modifications.
 ```c
-#include "two-phaseVP.h"
+#include "two-phaseAxiVP.h"
 ```
 
 You can use: conserving.h as well. Even without it, I was still able to conserve the total energy (also momentum?) of the system if I adapt based on curvature and vorticity/deformation tensor norm (see the adapt even). I had to smear the density and viscosity anyhow because of the sharp ratios in liquid (Bingham) and the gas.
@@ -157,7 +157,7 @@ The initial shape of the bubble at the liquid-gas interface can be calculated by
 Resources: 
 
 * [Alex Berny's Sandbox](http://www.basilisk.fr/sandbox/aberny/bubble/bubble.c)
-* [My Matlab code:](https://www.dropbox.com/s/3pqbs901dshq5wa/InitialCondition.m?dl=0) Also see the results for different $\mathcal{B}o$ number [here](https://youtu.be/Z_vdsOW5fsg).
+* [My Matlab code:](https://github.com/VatsalSy/Bursting-Bubble-In-a-Viscoplastic-Medium/blob/main/InitialCondition.m) Also see the results for different $\mathcal{B}o$ number [here](https://youtu.be/Z_vdsOW5fsg).
 
 <p align="center">
   <img src="VillermauxComparision.png" width="50%">
@@ -166,7 +166,7 @@ Resources:
 <!-- ![](VillermauxComparision.png)
 **Figure**: Comparision of the initial shape calculated using the Young-Laplace equations. Ofcourse, for this study, we only need: $\mathcal{B}o = 10^{-3}$. In the figure, $a$ is the capillary length, $a = \sqrt{\gamma/(\rho_lg)}$. -->
 
-Since we do not focus on the influence of $\mathcal{B}o$ number in the present study, I am not elaborating on it here. For all the simulations, I use the interfacial shape calculated for $\mathcal{B}o = 10^{-3}$. The resultant data file is available [here](https://www.dropbox.com/s/8let8wohwq2qxeq/Bo0.0010.dat?dl=0).
+Since we do not focus on the influence of $\mathcal{B}o$ number in the present study, I am not elaborating on it here. For all the simulations, I use the interfacial shape calculated for $\mathcal{B}o = 10^{-3}$. The resultant data file is available [here](https://raw.githubusercontent.com/VatsalSy/Bursting-Bubble-In-a-Viscoplastic-Medium/main/Bo0.0010.dat).
 
 **Note:** The curvature diverges at the cavity-free surface intersection. We fillet this corner to circumvent this singularity, introducing a rim with a finite curvature that connects the bubble to the free surface. We ensured that the curvature of the rim is high enough such that the subsequent dynamics are independent of its finite value.
 
@@ -224,7 +224,7 @@ event adapt(i++){
 }
 ```
 ## Alternatively
-At higher $\mathcal{O}h$ and $\mathcal{J}$ numbers, vorticities in the liquid cease to be interesting. In that case, one might want to adapt based on the norm of deformation tensor, $\mathbf{\mathcal{D}}$. I already calculate $\|\mathbf{\mathcal{D}}\|$ in [two-phaseVP.h](two-phaseVP.h).
+At higher $\mathcal{O}h$ and $\mathcal{J}$ numbers, vorticities in the liquid cease to be interesting. In that case, one might want to adapt based on the norm of deformation tensor, $\mathbf{\mathcal{D}}$. I already calculate $\|\mathbf{\mathcal{D}}\|$ in [two-phaseAxiVP.h](two-phaseAxiVP.h).
 
 **Note:** $\mathbf{\mathcal{D}}$ based refinement is way more expensive than $\omega$ based refinement.
 
@@ -287,7 +287,7 @@ export OMP_NUM_THREADS=8
 ~~~
 
 # Output and Results
-The post-processing codes and simulation data are available at: [PostProcess](https://www.dropbox.com/sh/upl2m01icn364lv/AAACI2tgcaTrpG6x7UEoBQ5Fa?dl=0)
+The post-processing codes and simulation data are available at: [PostProcess](https://github.com/VatsalSy/Bursting-Bubble-In-a-Viscoplastic-Medium/tree/main/PostProcess)
 
 ## Some typical simulations: These are all videos
 [![](https://img.youtube.com/vi/DY6TpfzZ2fM/0.jpg)](https://youtu.be/DY6TpfzZ2fM)
@@ -298,7 +298,7 @@ The post-processing codes and simulation data are available at: [PostProcess](ht
 Bursting bubble dynamics for different capillary-Bingham numbers. (a) $\mathcal{J} = 0.0$: A typical case with a Newtonian liquid medium, (b) $\mathcal{J} =0.1$: A weakly viscoplastic liquid medium in which the process still shows all the major characteristics of the Newtonian liquid, (c) $\mathcal{J} = 0.5$: A case of moderate yield stress whereby the jetting is suppressed, nonetheless the entire cavity still yields, and (d) $\mathcal{J} = 1.0$: A highly viscoplastic liquid medium whereby a part of the cavity never yields. The left part of each video shows the magnitude of the velocity field, and the right part shows the magnitude of the deformation tensor on a $\log_{10}$ scale. The transition to the black region (low strain rates) marks the yield-surface location in the present study. For all the cases in this figure, $\mathcal{O}h = 10^{-2}$.
 
 
-# Header File: two-phaseVP.h -- Two-phase interfacial flows
+# Header File: two-phaseAxiVP.h -- Two-phase interfacial flows
 This is a modified version of [two-phase.h](http://basilisk.fr/src/two-phase.h). It contains the implementation of
 Viscoplastic Fluid (Bingham Fluid).<br/>
 This file helps setup simulations for flows of two fluids separated by
