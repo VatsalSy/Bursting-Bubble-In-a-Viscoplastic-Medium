@@ -10,3 +10,4 @@ INPUT.md
 # Ignore all local history of files
 **/.history
 run*
+*.html
