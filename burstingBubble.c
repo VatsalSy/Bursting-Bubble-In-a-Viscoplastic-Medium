@@ -37,9 +37,9 @@ We use a modified adapt-wavelet algorithm available [(here)](http://basilisk.fr/
 #define tsnap (0.001)
 // Error tolerancs
 #define fErr (1e-3)                                 // error tolerance in f1 VOF
-#define KErr (1e-4)                                 // error tolerance in f2 VOF
-#define VelErr (1e-2)                               // error tolerances in velocity
-#define OmegaErr (1e-3)                             // error tolerances in vorticity
+#define KErr (1e-4)                                 // error tolerance in VoF curvature calculated using heigh function method (see adapt event)
+#define VelErr (1e-2)                               // error tolerances in velocity -- Use 1e-2 for low Oh and 1e-3 to 5e-3 for high Oh/moderate to high J
+#define OmegaErr (1e-3)                             // error tolerances in vorticity inside the liquid
 
 // Numbers!
 #define RHO21 (1e-3)
