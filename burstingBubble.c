@@ -215,7 +215,7 @@ event end (t = end) {
 event logWriting (i+=100) {
   double ke = 0.;
   foreach (reduction(+:ke)){
-    ke += (2*pi*y)*(0.5*(f[])*(sq(u.x[]) + sq(u.y[])))*sq(Delta);
+    ke += (2*pi*y)*(0.5*rho(f[])*(sq(u.x[]) + sq(u.y[])))*sq(Delta);
   }
   static FILE * fp;
   if (i == 0) {
@@ -230,6 +230,7 @@ event logWriting (i+=100) {
     fclose(fp);
   }
   fprintf (ferr, "%d %g %g %g\n", i, dt, t, ke);
+  // Ensure that the cut-off Kinetic energy is smaller than or equal to 1e-6 times the maximum kinetic energy of the system.
   if (ke > 1e3 || ke < 1e-6){
     if (i > 1e2){
       return 1;
