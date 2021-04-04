@@ -11,3 +11,4 @@ INPUT.md
 **/.history
 run*
 *.html
+.DS_Store
