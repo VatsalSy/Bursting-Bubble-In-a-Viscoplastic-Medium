@@ -11,9 +11,9 @@ header-includes:
   - \hypersetup{colorlinks}
 ---
 [![DOI](https://img.shields.io/badge/arXiv-2101.07744-90EE90.svg)](https://arxiv.org/abs/2101.07744)
-# Bursting Bubble in a Viscoplastic Medium
-
 [![DOI](https://zenodo.org/badge/310680647.svg)](https://zenodo.org/badge/latestdoi/310680647)
+
+# Bursting Bubble in a Viscoplastic Medium
 
 This repository contains the codes used for simulating the cases discussed in the manuscript: Bursting bubble in a viscoplastic medium. The results presented here are currently under review in Journal of Fluid Mechanics.
 
