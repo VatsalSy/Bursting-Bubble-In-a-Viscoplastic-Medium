@@ -283,7 +283,7 @@ event logWriting (i+=100) {
 ## Running the code
 ~~~bash
 #!/bin/bash
-qcc -fopenmp -Wall -O2 burstingBubble.c -o burstingBubble -lm
+qcc -fopenmp -Wall -O2 burstingBubble.c -o burstingBubble -lm -disable-dimensions
 export OMP_NUM_THREADS=8
 ./burstingBubble 10 0.25 1e-3 1e-2 5.0
 ~~~

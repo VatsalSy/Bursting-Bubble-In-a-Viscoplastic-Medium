@@ -12,3 +12,8 @@ INPUT.md
 run*
 *.html
 .DS_Store
+
+dump
+intermediate
+log
+burstingBubble
