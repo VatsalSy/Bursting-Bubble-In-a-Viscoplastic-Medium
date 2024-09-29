@@ -1,4 +1,13 @@
 /**
+ * Version 2.0
+ * Author: Vatsal Sanjay
+ * Last updated: Sep 29, 2024
+
+# Changelog Sep 29, 2024 v2.0
+* Removed adapt_wavelet_limited.h and replaced it with adapt_wavelet (in built in Basilisk)
+* Removed omega adaption based on vorticity as it does not work anymore ... 
+* Adaptation based on curvature is only triggered after the kink in the initial condition disappears. -- #TODO: fix me... this was working fine until a few years ago. first step would be to find out when this issue started...
+
 This repository contains the codes used for simulating the cases discussed in the manuscript: Bursting bubble in a viscoplastic medium. The results presented here are currently under review in Journal of Fluid Mechanics. The preprint of the article is available [here](https://arxiv.org/abs/2101.07744).
 
 The supplementary videos are available [here](https://youtube.com/playlist?list=PLf5C5HCrvhLFETl6iaRr21pzr5Xab1OCM)
@@ -32,14 +41,13 @@ To model Viscoplastic liquids, we use a modified version of [two-phase.h](http:/
 /**
 We use a modified adapt-wavelet algorithm available [(here)](http://basilisk.fr/sandbox/pairetti/bag_mode/adapt_wavelet_limited.h). It is written by *César Pairetti* (Thanks :)).
 */
-#include "adapt_wavelet_limited.h"
+// #include "adapt_wavelet_limited.h" // removing adapt_wavelet_limited as this code has been giving issues with latest production runs. See a part of this problem: https://github.com/Computational-Multiphase-Physics/adapt-wavelet-limited -- marked #remove_lim in rest of the code. 
 
 #define tsnap (0.001)
 // Error tolerancs
 #define fErr (1e-3)                                 // error tolerance in f1 VOF
 #define KErr (1e-4)                                 // error tolerance in VoF curvature calculated using heigh function method (see adapt event)
 #define VelErr (1e-2)                               // error tolerances in velocity -- Use 1e-2 for low Oh and 1e-3 to 5e-3 for high Oh/moderate to high J
-#define OmegaErr (1e-3)                             // error tolerances in vorticity inside the liquid
 
 // Numbers!
 #define RHO21 (1e-3)
@@ -111,9 +119,10 @@ int  main(int argc, char const *argv[]) {
 /**
 This event is specific to César's adapt_wavelet_limited.
 */
-int refRegion(double x, double y, double z){
-  return (y < 1.28 ? MAXlevel+2 : y < 2.56 ? MAXlevel+1 : y < 5.12 ? MAXlevel : MAXlevel-1);
-}
+// #remove_lim
+// int refRegion(double x, double y, double z){
+//   return (y < 1.28 ? MAXlevel+2 : y < 2.56 ? MAXlevel+1 : y < 5.12 ? MAXlevel : MAXlevel-1);
+// }
 
 /**
 ## Initial Condition
@@ -148,7 +157,8 @@ event init (t = 0) {
     fclose (fp);
     scalar d[];
     distance (d, InitialShape);
-    while (adapt_wavelet_limited ((scalar *){f, d}, (double[]){1e-8, 1e-8}, refRegion).nf);
+    // while (adapt_wavelet_limited ((scalar *){f, d}, (double[]){1e-8, 1e-8}, refRegion).nf); #remove_lim
+    while (adapt_wavelet ((scalar *){f, d}, (double[]){1e-8, 1e-8}, MAXlevel).nf);
     /**
     The distance function is defined at the center of each cell, we have
     to calculate the value of this function at each vertex. */
@@ -172,16 +182,24 @@ event adapt(i++){
 
   We also adapt based on vorticity in the liquid domain. I have noticed that this refinement helps resolve the fake-yield surface accurately (see the black regions in the videos below). 
   */
-  scalar KAPPA[], omega[];
+  scalar KAPPA[];
   curvature(f, KAPPA);
-  vorticity (u, omega);
-  foreach(){
-    omega[] *= f[];
+
+  // adapt_wavelet_limited ((scalar *){f, u.x, u.y, KAPPA, omega},
+  //    (double[]){fErr, VelErr, VelErr, KErr, OmegaErr},
+  //    refRegion);
+  // #remove_lim
+
+  if (t < 0.01){
+    adapt_wavelet ((scalar *){f, u.x, u.y},
+      (double[]){fErr, VelErr, VelErr},
+      MAXlevel);
+  } else {
+    adapt_wavelet ((scalar *){f, u.x, u.y, KAPPA},
+      (double[]){fErr, VelErr, VelErr, KErr},
+      MAXlevel);
   }
-  boundary ((scalar *){KAPPA, omega});
-  adapt_wavelet_limited ((scalar *){f, u.x, u.y, KAPPA, omega},
-     (double[]){fErr, VelErr, VelErr, KErr, OmegaErr},
-     refRegion);
+
   /**
   ## Alternatively
   At higher $\mathcal{O}h$ and $\mathcal{J}$ numbers, vorticities in the liquid cease to be interesting. In that case, one might want to adapt based on the norm of deformation tensor, $\mathbf{\mathcal{D}}$. I already calculate $\|\mathbf{\mathcal{D}}\|$ in [two-phaseAxiVP.h](two-phaseAxiVP.h).
@@ -212,7 +230,7 @@ event end (t = end) {
 /**
 ## Log writing
 */
-event logWriting (i+=100) {
+event logWriting (i++) {
   double ke = 0.;
   foreach (reduction(+:ke)){
     ke += (2*pi*y)*(0.5*rho(f[])*(sq(u.x[]) + sq(u.y[])))*sq(Delta);
