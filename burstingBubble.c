@@ -191,18 +191,18 @@ event adapt(i++){
   //    refRegion);
   // #remove_lim
 
-  scalar D2c[];
-  foreach(){
-    D2c[] = f[]*pow(10,D2[]);
-  }
+  // scalar D2c[];
+  // foreach(){
+  //   D2c[] = f[]*pow(10,D2[]);
+  // }
 
   if (t < 20*tsnap){
     adapt_wavelet ((scalar *){f, u.x, u.y},
       (double[]){fErr, VelErr, VelErr},
       MAXlevel);
   } else {
-    adapt_wavelet ((scalar *){f, u.x, u.y, KAPPA, D2c},
-      (double[]){fErr, VelErr, VelErr, KErr, D2Err},
+    adapt_wavelet ((scalar *){f, u.x, u.y, KAPPA},
+      (double[]){fErr, VelErr, VelErr, KErr},
       MAXlevel);
   }
 
