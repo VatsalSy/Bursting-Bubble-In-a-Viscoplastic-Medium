@@ -48,7 +48,7 @@ We use a modified adapt-wavelet algorithm available [(here)](http://basilisk.fr/
 #define fErr (1e-3)                                 // error tolerance in f1 VOF
 #define KErr (1e-3)                                 // error tolerance in VoF curvature calculated using heigh function method (see adapt event)
 #define VelErr (1e-2)                               // error tolerances in velocity -- Use 1e-2 for low Oh and 1e-3 to 5e-3 for high Oh/moderate to high J
-#define D2Err (1e-2)
+#define D2Err (1e-1)
 
 // Numbers!
 #define RHO21 (1e-3)
@@ -193,12 +193,7 @@ event adapt(i++){
 
   scalar D2c[];
   foreach(){
-    double D11 = (u.y[0,1] - u.y[0,-1])/(2*Delta);
-    double D22 = (u.y[]/max(y,1e-20));
-    double D33 = (u.x[1,0] - u.x[-1,0])/(2*Delta);
-    double D13 = 0.5*( (u.y[1,0] - u.y[-1,0] + u.x[0,1] - u.x[0,-1])/(2*Delta) );
-    double D2 = (sq(D11)+sq(D22)+sq(D33)+2.0*sq(D13));
-    D2c[] = f[]*D2;
+    D2c[] = f[]*pow(10,D2[]);
   }
 
   if (t < 20*tsnap){
@@ -273,7 +268,7 @@ event logWriting (i++) {
 ## Running the code
 ~~~bash
 #!/bin/bash
-qcc -fopenmp -Wall -O2 burstingBubble.c -o burstingBubble -lm
+qcc -fopenmp -Wall -O2 burstingBubble.c -o burstingBubble -lm -disable-dimensions
 export OMP_NUM_THREADS=8
 ./burstingBubble 10 0.25 1e-3 1e-2 5.0
 ~~~

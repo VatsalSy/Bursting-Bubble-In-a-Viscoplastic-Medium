@@ -45,7 +45,9 @@ averages (i.e. harmonic). */
 # define rho(f) (clamp(f,0.,1.)*(rho1 - rho2) + rho2)
 #endif
 #ifndef mu
-# define mu(muTemp, mu2, f)  (clamp(f,0.,1.)*(muTemp - mu2) + mu2)
+// # define mu(muTemp, mu2, f)  (clamp(f,0.,1.)*(muTemp - mu2) + mu2)
+// New harmonic mean definition:
+# define mu(muTemp, mu2, f) (1.0 / ((clamp(f,0.,1.) / muTemp) + ((1.0 - clamp(f,0.,1.)) / mu2)))
 #endif
 
 /**
