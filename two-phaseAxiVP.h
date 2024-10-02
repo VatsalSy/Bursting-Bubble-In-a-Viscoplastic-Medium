@@ -33,8 +33,7 @@ event defaults (i = 0) {
   If the viscosity is non-zero, we need to allocate the face-centered
   viscosity field. */
 
-  if (mu1 || mu2)
-    mu = new face vector;
+  mu = new face vector;
 }
 
 /**
@@ -59,7 +58,7 @@ scalar sf[];
 # define sf f
 #endif
 
-event properties (i++) {
+event tracer_advection (i++) {
 
   /**
   When using smearing of the density jump, we initialise *sf* with the
@@ -85,9 +84,11 @@ event properties (i++) {
 
 #if TREE
   sf.prolongation = refine_bilinear;
-  boundary ({sf});
+  sf.dirty = true; // boundary conditions need to be updated
 #endif
+}
 
+event properties (i++) {
   /**
   This is part where we have made changes.
   $$\mathcal{D}_{11} = \frac{\partial u_r}{\partial r}$$
@@ -190,9 +191,8 @@ event properties (i++) {
       D2[] = -10;
     }
   }
-  boundary(all);
 #if TREE
   sf.prolongation = fraction_refine;
-  boundary ({sf});
+  sf.dirty = true; // boundary conditions need to be updated
 #endif
 }

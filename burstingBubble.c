@@ -46,8 +46,9 @@ We use a modified adapt-wavelet algorithm available [(here)](http://basilisk.fr/
 #define tsnap (0.001)
 // Error tolerancs
 #define fErr (1e-3)                                 // error tolerance in f1 VOF
-#define KErr (1e-4)                                 // error tolerance in VoF curvature calculated using heigh function method (see adapt event)
+#define KErr (1e-3)                                 // error tolerance in VoF curvature calculated using heigh function method (see adapt event)
 #define VelErr (1e-2)                               // error tolerances in velocity -- Use 1e-2 for low Oh and 1e-3 to 5e-3 for high Oh/moderate to high J
+#define D2Err (1e-2)
 
 // Numbers!
 #define RHO21 (1e-3)
@@ -190,13 +191,23 @@ event adapt(i++){
   //    refRegion);
   // #remove_lim
 
-  if (t < 0.01){
+  scalar D2c[];
+  foreach(){
+    double D11 = (u.y[0,1] - u.y[0,-1])/(2*Delta);
+    double D22 = (u.y[]/max(y,1e-20));
+    double D33 = (u.x[1,0] - u.x[-1,0])/(2*Delta);
+    double D13 = 0.5*( (u.y[1,0] - u.y[-1,0] + u.x[0,1] - u.x[0,-1])/(2*Delta) );
+    double D2 = (sq(D11)+sq(D22)+sq(D33)+2.0*sq(D13));
+    D2c[] = f[]*D2;
+  }
+
+  if (t < 20*tsnap){
     adapt_wavelet ((scalar *){f, u.x, u.y},
       (double[]){fErr, VelErr, VelErr},
       MAXlevel);
   } else {
-    adapt_wavelet ((scalar *){f, u.x, u.y, KAPPA},
-      (double[]){fErr, VelErr, VelErr, KErr},
+    adapt_wavelet ((scalar *){f, u.x, u.y, KAPPA, D2c},
+      (double[]){fErr, VelErr, VelErr, KErr, D2Err},
       MAXlevel);
   }
 
@@ -235,19 +246,21 @@ event logWriting (i++) {
   foreach (reduction(+:ke)){
     ke += (2*pi*y)*(0.5*rho(f[])*(sq(u.x[]) + sq(u.y[])))*sq(Delta);
   }
-  static FILE * fp;
-  if (i == 0) {
-    fprintf (ferr, "i dt t ke\n");
-    fp = fopen ("log", "w");
-    fprintf (fp, "i dt t ke\n");
-    fprintf (fp, "%d %g %g %g\n", i, dt, t, ke);
-    fclose(fp);
-  } else {
-    fp = fopen ("log", "a");
-    fprintf (fp, "%d %g %g %g\n", i, dt, t, ke);
-    fclose(fp);
+  if (pid() == 0){
+    static FILE * fp;
+    if (i == 0) {
+      fprintf (ferr, "i dt t ke\n");
+      fp = fopen ("log", "w");
+      fprintf (fp, "i dt t ke\n");
+      fprintf (fp, "%d %g %g %g\n", i, dt, t, ke);
+      fclose(fp);
+    } else {
+      fp = fopen ("log", "a");
+      fprintf (fp, "%d %g %g %g\n", i, dt, t, ke);
+      fclose(fp);
+    }
+    fprintf (ferr, "%d %g %g %g\n", i, dt, t, ke);
   }
-  fprintf (ferr, "%d %g %g %g\n", i, dt, t, ke);
   // Ensure that the cut-off Kinetic energy is smaller than or equal to 1e-6 times the maximum kinetic energy of the system.
   if (ke > 1e3 || ke < 1e-6){
     if (i > 1e2){
