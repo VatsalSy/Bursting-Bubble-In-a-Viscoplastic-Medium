@@ -1,12 +1,15 @@
 /**
- * Version 2.0
+ * Version 2.5
  * Author: Vatsal Sanjay
- * Last updated: Sep 29, 2024
+ * Last updated: Dec 10, 2024
+
+# Changelog Dec 10, 2024 v2.5
+* Fixed: ``Adaptation based on curvature is only triggered after the kink in the initial condition disappears." Now adaptation based on curvature is triggered from the start.
 
 # Changelog Sep 29, 2024 v2.0
 * Removed adapt_wavelet_limited.h and replaced it with adapt_wavelet (in built in Basilisk)
 * Removed omega adaption based on vorticity as it does not work anymore ... 
-* Adaptation based on curvature is only triggered after the kink in the initial condition disappears. -- #TODO: fix me... this was working fine until a few years ago. first step would be to find out when this issue started...
+* Adaptation based on curvature is only triggered after the kink in the initial condition disappears. 
 
 This repository contains the codes used for simulating the cases discussed in the manuscript: Bursting bubble in a viscoplastic medium. The results presented here are currently under review in Journal of Fluid Mechanics. The preprint of the article is available [here](https://arxiv.org/abs/2101.07744).
 
@@ -48,7 +51,7 @@ We use a modified adapt-wavelet algorithm available [(here)](http://basilisk.fr/
 #define fErr (1e-3)                                 // error tolerance in f1 VOF
 #define KErr (1e-3)                                 // error tolerance in VoF curvature calculated using heigh function method (see adapt event)
 #define VelErr (1e-2)                               // error tolerances in velocity -- Use 1e-2 for low Oh and 1e-3 to 5e-3 for high Oh/moderate to high J
-#define D2Err (1e-1)
+#define D2Err (1e-3)
 
 // Numbers!
 #define RHO21 (1e-3)
@@ -114,6 +117,9 @@ int  main(int argc, char const *argv[]) {
   mu1 = Oh, mu2 = MU21*Oh;
   f.sigma = 1.0;
   G.x = -Bond;
+
+  TOLERANCE=1e-4;
+  CFL = 1e-1;
   run();
 }
 
@@ -196,15 +202,9 @@ event adapt(i++){
   //   D2c[] = f[]*pow(10,D2[]);
   // }
 
-  if (t < 20*tsnap){
-    adapt_wavelet ((scalar *){f, u.x, u.y},
-      (double[]){fErr, VelErr, VelErr},
-      MAXlevel);
-  } else {
-    adapt_wavelet ((scalar *){f, u.x, u.y, KAPPA},
+  adapt_wavelet ((scalar *){f, u.x, u.y, KAPPA},
       (double[]){fErr, VelErr, VelErr, KErr},
       MAXlevel);
-  }
 
   /**
   ## Alternatively
